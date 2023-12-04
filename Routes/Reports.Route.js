@@ -1,7 +1,7 @@
 const express = require("express")
 
 const {reportModel} = require("../Modles/report.model")
-const noteRouter = express.Router()
+const reportRouter = express.Router()
 // const {authenticate} =require("../Middelwares/authenticate")
 
 
@@ -84,5 +84,5 @@ noteRouter.get("/notess",async(req,res)=>{
 
 
 module.exports = {
-    noteRouter
+    reportRouter
 }
