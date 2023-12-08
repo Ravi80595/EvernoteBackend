@@ -1,12 +1,12 @@
 const mongoose = require("mongoose")
 
 const userSchema = mongoose.Schema({
-    firstname:String,
-    lastname:String,
+    name:String,
+    brandName:String,
     email:String,
     password:String,
-    avtar:String,
-    role:String
+    reports:[{ type: mongoose.Schema.Types.ObjectId, ref: 'report' }],
+    influencersList:[mongoose.Types.ObjectId]
 })
 
 const UserModel = mongoose.model("User",userSchema)

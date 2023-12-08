@@ -1,87 +1,122 @@
 const express = require("express")
 
 const {reportModel} = require("../Modles/report.model")
+const {UserModel}= require("../Modles/User.model")
 const reportRouter = express.Router()
-// const {authenticate} =require("../Middelwares/authenticate")
 
 
-// All notes from Here for users
 
-reportRouter.get("/reports",async(req,res)=>{
-    // const user=req.body.userID
-    try{
-        const notes = await reportModel.find()
-        res.status(200).send({"msg":"All Notes Here",notes})
+reportRouter.get("/reports", async (req, res) => {
+    try {
+        // Populate the influencers details when fetching reports
+        const notes = await reportModel.find().populate('influencers').exec();
+        res.status(200).send(notes);
+    } catch (err) {
+        console.log(err);
+        res.status(400).send({ "err": "Something went wrong" });
     }
-    catch(err){
-        console.log(err)
-        res.status(400).send({"err":"Something went wrong"})
+});
+
+
+reportRouter.post("/create", async (req, res) => {
+    const { reportName, postsLive, reach, budget, engagements, influencers,influencersLive,likes,comments,engagementRate,cpe } = req.body;
+
+    try {
+        if (influencers && !Array.isArray(influencers)) {
+            return res.status(400).send({ "error": "Influencers must be an array of influencer IDs" });
+        }
+        if (influencers) {
+            for (const influencerId of influencers) {
+                if (!influencerId.match(/^[0-9a-fA-F]{24}$/)) {
+                    return res.status(400).send({ "error": "Invalid influencer ID in the influencers array" });
+                }
+            }
+        }
+        const newReport = new reportModel({
+            reportName,
+            postsLive,
+            reach,
+            budget,
+            engagements,
+            influencersLive,
+            likes,
+            comments,
+            engagementRate,
+            cpe,
+            influencers: influencers || []
+        });
+        await newReport.save();
+        res.status(200).send({ 'msg': "New Report Created Successfully" });
+    } catch (err) {
+        console.log(err);
+        res.status(400).send({ "err": "Something went wrong" });
     }
-})
+});
 
-// note Create Method
 
-reportRouter.post("/create",async(req,res)=>{
-    const {reportName,postsLive,reach,budget,engagements,influencers} = req.body
-    try{    
-        const new_note = new reportModel({
-            reportName,postsLive,reach,budget,engagements,influencers
-        })
-        await new_note.save()
-        res.status(200).send({'msg':"New Report Created Successfully"})
-    }   
-    catch(err){
-        console.log(err)
-        res.status(400).send({"err":"Something went wrong"})
+
+
+reportRouter.delete("/:reportId", async (req, res) => {
+    const reportId = req.params.reportId;
+    try {
+      const existingReport = await reportModel.findById(reportId);
+  
+      if (!existingReport) {
+        return res.status(404).send({ "error": "Report not found" });
+      }
+  
+      // Delete the report
+      await existingReport.remove();
+  
+      res.status(200).send({ 'msg': "Report deleted successfully" });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({ "err": "Internal server error" });
     }
-})
+});
 
-// Notes Update Method
 
-noteRouter.patch("/update/:noteID",authenticate,async(req,res)=>{
-    const noteID  = req.params.noteID
-    const userID = req.body.userID
-    const notes = await NoteModel.findOne({_id:noteID})
-    if(userID !==notes.userID){
-        res.status(400).send({"msg":"User is not Authorized"})
+
+
+// POST /assign-report/:userId
+reportRouter.post("/assignReport/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    const reportData = req.body; 
+
+    try {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).send({ "error": "User not found" });
+        }
+        const newReport = new reportModel(reportData);
+        await newReport.save();
+        user.reports.push(newReport._id);
+        await user.save();
+        res.status(201).send({ 'msg': "Report assigned to user successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ "error": "Internal server error" });
     }
-    try{
-         await NoteModel.findByIdAndUpdate({_id:noteID},req.body)
-         res.status(200).send({"msg":"Note Updated successfully"})
-    }
-    catch(err){
-        console.log(err)
-        res.status(400).send({"err":"Something went wrong"})
-    }
-})
+});
 
-// Delete Method Here
 
-noteRouter.delete("/delete/:noteID",authenticate,async(req,res)=>{
-    const noteID = req.params.noteID
-    const userID = req.body.userID
-    const note = await NoteModel.findOne({_id:noteID})
-    if(userID !== note.userID){
-        res.status(400).send({"msg":"User is not Authorized"})
-    }else{
-        await NoteModel.findByIdAndDelete({_id:noteID})
-        res.status(200).send({"msg":"Note Deleted successfully"})
+reportRouter.get("/:reportId", async (req, res) => {
+    const reportId = req.params.reportId;
+
+    try {
+        // Populate the influencers details when fetching a specific report
+        const report = await reportModel.findById(reportId).populate('influencers').exec();
+        
+        if (!report) {
+            return res.status(404).send({ "error": "Report not found" });
+        }
+
+        res.status(200).send(report);
+    } catch (err) {
+        console.log(err);
+        res.status(400).send({ "err": "Something went wrong" });
     }
-})
-
-// All Notes for admin
-
-noteRouter.get("/notess",async(req,res)=>{
-    try{
-        const notes = await NoteModel.find()
-        res.status(200).send({"msg":"All User Here",notes})
-    }
-    catch(err){
-        console.log(err)
-        res.status(400).send({"err":"Something went wrong"})
-    }
-})
-
+});
 
 module.exports = {
     reportRouter
