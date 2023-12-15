@@ -11,6 +11,8 @@ const influencerSchema = mongoose.Schema({
     email: String,
     phone: String,
     message: String,
+    followers:String,
+    views:String,
     AddDate:{type:String,default:GetCurrent1Date},
     AddTime:{type:String,default:GetCurrent1Time}
   });

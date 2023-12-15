@@ -23,7 +23,7 @@ influencerRouter.post("/create", async (req, res) => {
     console.log(req.body)
     try {
         // Extract influencer data from the request body
-        const { name, instagram, youtube, email, phone, message } = req.body;
+        const { name, instagram, youtube, email, phone, message,followers,views} = req.body;
 
         // Validate required fields
         if (!name || !instagram || !email) {
@@ -37,7 +37,9 @@ influencerRouter.post("/create", async (req, res) => {
             youtube,
             email,
             phone,
-            message
+            message,
+            followers,
+            views
         });
 
         // Save the new influencer to the database
