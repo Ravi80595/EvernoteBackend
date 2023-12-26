@@ -20,7 +20,6 @@ reportRouter.get("/reports", async (req, res) => {
 
 reportRouter.post("/create", async (req, res) => {
     const { reportName, postsLive, reach, budget, engagements, influencers,influencersLive,likes,comments,engagementRate,cpe } = req.body;
-
     try {
         if (influencers && !Array.isArray(influencers)) {
             return res.status(400).send({ "error": "Influencers must be an array of influencer IDs" });
@@ -52,6 +51,43 @@ reportRouter.post("/create", async (req, res) => {
         res.status(400).send({ "err": "Something went wrong" });
     }
 });
+
+
+reportRouter.put("/update/:reportId", async (req, res) => {
+    const reportId = req.params.reportId;
+    const updatedReportData = req.body;
+    console.log(reportId, updatedReportData);
+  
+    try {
+      const existingReport = await reportModel.findById(reportId);
+      if (!existingReport) {
+        return res.status(404).send({ "error": "Report not found" });
+      }
+      existingReport.reportName = updatedReportData.reportName || existingReport.reportName
+      existingReport.postsLive = updatedReportData.postsLive
+      existingReport.reach = updatedReportData.reach
+      existingReport.budget = updatedReportData.budget
+      existingReport.engagements = updatedReportData.engagements
+      existingReport.influencersLive = updatedReportData.influencersLive
+      existingReport.likes = updatedReportData.likes
+      existingReport.comments = updatedReportData.comments
+      existingReport.engagementRate = updatedReportData.engagementRate
+      existingReport.cpe = updatedReportData.cpe,
+      existingReport.updates=updatedReportData.updates
+      if (updatedReportData.influencers && Array.isArray(updatedReportData.influencers)) {
+        // If influencers array is provided, add new data to it
+        if (updatedReportData.influencers.length > 0) {
+          existingReport.influencers = [...existingReport.influencers, ...updatedReportData.influencers];
+        }
+      }
+      await existingReport.save();
+      res.status(200).send({ 'msg': "Report updated successfully" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({ "error": "Internal server error" });
+    }
+  });
+  
 
 
 
@@ -104,9 +140,7 @@ reportRouter.get("/:reportId", async (req, res) => {
     const reportId = req.params.reportId;
 
     try {
-        // Populate the influencers details when fetching a specific report
         const report = await reportModel.findById(reportId).populate('influencers').exec();
-        
         if (!report) {
             return res.status(404).send({ "error": "Report not found" });
         }

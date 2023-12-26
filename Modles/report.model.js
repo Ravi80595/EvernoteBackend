@@ -15,6 +15,7 @@ const reportSchema = mongoose.Schema({
     comments:String,
     engagementRate:String,
     cpe:String,
+    updates:String,
     influencers: [{ type: mongoose.Schema.Types.ObjectId, ref: "influencer" }],
     NoteDate:{type:String,default:GetCurrent1Date},
     NoteTime:{type:String,default:GetCurrent1Time}

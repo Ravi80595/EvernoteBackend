@@ -109,6 +109,16 @@ influencerRouter.delete("/:id", async (req, res) => {
 });
 
 
+influencerRouter.get("/search/:id", async (req, res) => {
+    try {
+        const searchRegex = new RegExp(req.params.id, 'i');
+        const users = await influencerModel.find({ name: { $regex: searchRegex } });
+        res.send(users);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ "error": "Internal Server Error" });
+    }
+});
 
 
 module.exports = {
