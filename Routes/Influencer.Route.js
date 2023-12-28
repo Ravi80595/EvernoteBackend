@@ -23,7 +23,7 @@ influencerRouter.post("/create", async (req, res) => {
     console.log(req.body)
     try {
         // Extract influencer data from the request body
-        const { name, instagram, youtube, email, phone, message,followers,views} = req.body;
+        const { name, instagram, youtube, email, phone, message,followers,views,state,city,language,barter,youtubeName,youtubeFollowers,genre} = req.body;
 
         // Validate required fields
         if (!name || !instagram || !email) {
@@ -39,7 +39,14 @@ influencerRouter.post("/create", async (req, res) => {
             phone,
             message,
             followers,
-            views
+            views,
+            state,
+            city,
+            language,
+            barter,
+            youtubeName,
+            youtubeFollowers,
+            genre
         });
 
         // Save the new influencer to the database
@@ -113,6 +120,48 @@ influencerRouter.get("/search/:id", async (req, res) => {
     try {
         const searchRegex = new RegExp(req.params.id, 'i');
         const users = await influencerModel.find({ name: { $regex: searchRegex } });
+        res.send(users);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ "error": "Internal Server Error" });
+    }
+});
+
+influencerRouter.get("/searchState/:id", async (req, res) => {
+    try {
+        const searchRegex = new RegExp(req.params.id, 'i');
+        const users = await influencerModel.find({ state: { $regex: searchRegex } });
+        res.send(users);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ "error": "Internal Server Error" });
+    }
+});
+
+influencerRouter.get("/searchGenre/:id", async (req, res) => {
+    try {
+        const searchRegex = new RegExp(req.params.id, 'i');
+        const users = await influencerModel.find({ genre: { $regex: searchRegex } });
+        res.send(users);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ "error": "Internal Server Error" });
+    }
+});
+
+
+influencerRouter.get("/search/:state/:genre", async (req, res) => {
+    try {
+        const { state, genre } = req.params;
+        const searchRegexState = new RegExp(state, 'i');
+        const searchRegexGenre = new RegExp(genre, 'i');
+
+        const users = await influencerModel.find({
+            state: { $regex: searchRegexState },
+            // Use the actual field name from your schema
+            genre: { $regex: searchRegexGenre },
+        });
+
         res.send(users);
     } catch (err) {
         console.log(err);

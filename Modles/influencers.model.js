@@ -14,11 +14,19 @@ const influencerSchema = mongoose.Schema({
     message: String,
     followers:String,
     views:String,
+    state:String,
+    city:String,
+    language:String,
+    barter:String,
+    youtubeName:String,
+    youtubeFollowers:String,
+    genre:String,
     AddDate:{type:String,default:GetCurrent1Date},
     AddTime:{type:String,default:GetCurrent1Time}
   });
 
 
+  
 const influencerModel = mongoose.model("influencer",influencerSchema)
 
 module.exports={

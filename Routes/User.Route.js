@@ -226,7 +226,6 @@ UserRouter.patch('/rejected', async (req, res) => {
       if (!updateUser) {
         return res.status(404).send({ msg: 'User not found' });
       }
-  
       res.status(200).send({ msg: 'Profile Updated', user: updateUser });
     } catch (err) {
       console.error(err);
